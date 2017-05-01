@@ -8,7 +8,7 @@ MESSAGE ("HPX_DIR:" ${HPX_DIR})
 set (CMAKE_CXX_STANDARD 14)
 
 add_definitions( -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBOOST_LOG_DYN_LINK=1 )
-add_compile_options(-Wall -g -O3 -Wno-unused-lambda-capture -Wno-unused-variable -Wno-unknown-pragmas -Wno-unused-local-typedefs)
+add_compile_options(-Wall -g -O3 -Wno-unused-lambda-capture -Wno-unused-variable -Wno-unknown-pragmas -Wno-unused-local-typedefs -ftree-vectorize -fno-signed-zeros -fno-trapping-math)
 
 find_package(HPX REQUIRED PATHS ${HPX_ROOT} ${HPX_DIR} NO_DEFAULT_PATH)
 
@@ -19,41 +19,37 @@ add_executable(matrix_test ${TEST_SOURCES})
 #set (GTest_Additional_Libs irc pthread)
 
 
-  IF (CLANG)
+  #IF (CLANG)
     set (GTestLib  "libgtest.clang.a" )
-  ELSE(CLANG)
-    set (GTestLib "libgtest.gcc.a" )
-  ENDIF(CLANG )
+ # ELSE(CLANG)
+ #   set (GTestLib "libgtest.gcc.a" )
+ # ENDIF(CLANG )
   set (Boost_Lib_Path "${BOOST_ROOT}/stage/lib")
+
 
 
   include_directories("./external/include/gtest/include"
     "/local/src/hpx_test/matrix/external/include/"
     "/local/src/hpx_test/matrix/external/include/gtest/"
+    ${BOOST_ROOT}
     )
 
+set (LibPath ${PROJECT_SOURCE_DIR}/external/lib, ${Boost_Lib_Path}, "/usr/src/boost/1.63/clang/stage/lib")
+
+link_directories( ${Boost_Lib_Path}  ${LibPath} ${HPX_Root}/lib ${MKL_Lib_Path}  ${Intel_Compiler_Lib_Path} ${Boost_LIBRARY_DIR} )
+
+
   target_link_libraries (matrix_test
-  ${Other_Libs}
-  boost_log
-p    ${MKL_Libs}
-    ${LibPath}/${GTestLib}
+    "/local/src/hpx_test/matrix/external/lib/libgtest.clang.a"
+    ${Boost_Lib_Path}/libboost_log.so
     ${GTest_Additional_Libs}
     )
 
-link_directories( ${Boost_Lib_Path}  ${LibPath} ${HPX_Root}/lib ${MKL_Lib_Path}  ${Intel_Compiler_Lib_Path} ${Boost_LIBRARY_DIR})
-
-set (LibPath ${PROJECT_SOURCE_DIR}/../lib, ${Boost_Lib_Path})
 
    hpx_setup_target(matrix_test
     )
 
 
-
-
-
-
-target_link_libraries (matrix_test
-  boost_log)
 
 hpx_setup_target(matrix_test
     )
